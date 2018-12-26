@@ -11,5 +11,8 @@
   "devDependencies": {
     "electron": "^4.0.0",
     "electron-packager": "^13.0.1"
+  },
+  "dependencies": {
+    "pixi.js": "^4.8.4"
   }
 }
