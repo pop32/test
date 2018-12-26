@@ -20,6 +20,21 @@ let app = new PIXI.Application({
 
 document.body.appendChild(app.view);
 
+class ChartTick {
+  constructor(opt) {
+    this.dt    = opt.dt;
+    this.low   = opt.l;
+    this.hight = opt.h;
+    this.start = opt.s;
+    this.end   = opt.e;
+  }
+}
+
+var ChartTickList = [];
+ChartTickList.push(new ChartTick({dt:new Date(),l:1,h:2,s:3,e:4}));
+ChartTickList.push(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
+console.log(ChartTickList);
+
 PIXI.loader
   .add("img/test.png")
   .load(setup);
@@ -28,8 +43,17 @@ function setup() {
   //Create the cat sprite
   let cat = new PIXI.Sprite(PIXI.loader.resources["img/test.png"].texture);
 
+  let rectangle = new PIXI.Graphics();
+rectangle.lineStyle(4, 0xFF3300, 1);
+rectangle.beginFill(0x66CCFF);
+rectangle.drawRect(0, 0, 64, 64);
+rectangle.endFill();
+rectangle.x = 50;
+rectangle.y = 50;
+
   //Add the cat to the stage
   app.stage.addChild(cat);
+  app.stage.addChild(rectangle);
 }
 
 
