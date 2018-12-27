@@ -27,13 +27,70 @@ class ChartTick {
     this.hight = opt.h;
     this.start = opt.s;
     this.end   = opt.e;
+
+    this.x = 0;
+    this.y = 0;
+    this.width = 2;
+    this.height = 0;
+
+    this.sprite = new PIXI.Graphics();
+
+  }
+
+  getSprite() {
+    //rectangle.lineStyle(4, 0xFF3300, 1);
+    this.sprite.beginFill(0x66CCFF);
+    this.sprite.drawRect(0, 0, this.width, this.height);
+    this.sprite.endFill();
+    this.sprite.x = this.x;
+    this.sprite.y = this.y;
+    return this.sprite;
   }
 }
 
-var ChartTickList = [];
-ChartTickList.push(new ChartTick({dt:new Date(),l:1,h:2,s:3,e:4}));
-ChartTickList.push(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
-console.log(ChartTickList);
+class ChartContainer {
+  constructor(opt) {
+    this.ChartTick = [];
+  }
+  
+  addChartTick(ct) {
+    this.ChartTick.push(ct);
+  }
+
+  setPosition() {
+    let vx = 200;
+    this.ChartTick.forEach(function(obj){
+      obj.x = vx;
+      obj.y = 50
+      obj.width = 2;
+      obj.height = 50
+
+      vx -= obj.width + 2;
+    });
+  }
+
+  setup(pixiSurface) {
+    let rectangle = new PIXI.Graphics();
+    //rectangle.lineStyle(4, 0xFF3300, 1);
+    rectangle.beginFill(0x66CCFF);
+    rectangle.drawRect(0, 0, 30, 30);
+    rectangle.endFill();
+    rectangle.x = 50;
+    rectangle.y = 50;
+    surface.addChild(rectangle);
+
+    this.setPosition();
+    console.log(this.ChartTick);
+    this.ChartTick.forEach(function(obj){
+      pixiSurface.addChild(obj.getSprite());
+    });
+  }
+}
+
+var chartContainer = new ChartContainer();
+chartContainer.addChartTick(new ChartTick({dt:new Date(),l:1,h:2,s:3,e:4}));
+chartContainer.addChartTick(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
+console.log(chartContainer);
 
 PIXI.loader
   .add("img/test.png")
@@ -43,17 +100,11 @@ function setup() {
   //Create the cat sprite
   let cat = new PIXI.Sprite(PIXI.loader.resources["img/test.png"].texture);
 
-  let rectangle = new PIXI.Graphics();
-rectangle.lineStyle(4, 0xFF3300, 1);
-rectangle.beginFill(0x66CCFF);
-rectangle.drawRect(0, 0, 64, 64);
-rectangle.endFill();
-rectangle.x = 50;
-rectangle.y = 50;
+  chartContainer.setup(app.stage);
 
   //Add the cat to the stage
   app.stage.addChild(cat);
-  app.stage.addChild(rectangle);
+
 }
 
 
