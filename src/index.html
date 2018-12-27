@@ -50,7 +50,10 @@ class ChartTick {
 
 class ChartContainer {
   constructor(opt) {
+    this.width  = opt.width;
+    this.height = opt.height;
     this.ChartTick = [];
+    this.Container = new PIXI.Container();
   }
   
   addChartTick(ct) {
@@ -69,7 +72,7 @@ class ChartContainer {
     });
   }
 
-  setup(pixiSurface) {
+  setup() {
     let rectangle = new PIXI.Graphics();
     //rectangle.lineStyle(4, 0xFF3300, 1);
     rectangle.beginFill(0x66CCFF);
@@ -77,17 +80,22 @@ class ChartContainer {
     rectangle.endFill();
     rectangle.x = 50;
     rectangle.y = 50;
-    surface.addChild(rectangle);
+    this.Container.addChild(rectangle);
 
     this.setPosition();
     console.log(this.ChartTick);
+    let that = this;
     this.ChartTick.forEach(function(obj){
-      pixiSurface.addChild(obj.getSprite());
+      that.Container.addChild(obj.getSprite());
     });
+  }
+
+  getContainer() {
+    return this.Container;
   }
 }
 
-var chartContainer = new ChartContainer();
+var chartContainer = new ChartContainer({width:255, height:255});
 chartContainer.addChartTick(new ChartTick({dt:new Date(),l:1,h:2,s:3,e:4}));
 chartContainer.addChartTick(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
 console.log(chartContainer);
@@ -100,7 +108,8 @@ function setup() {
   //Create the cat sprite
   let cat = new PIXI.Sprite(PIXI.loader.resources["img/test.png"].texture);
 
-  chartContainer.setup(app.stage);
+  chartContainer.setup();
+  app.stage.addChild(chartContainer.getContainer());
 
   //Add the cat to the stage
   app.stage.addChild(cat);
