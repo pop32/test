@@ -30,64 +30,78 @@ class ChartTick {
 
     this.x = 0;
     this.y = 0;
-    this.width = 2;
-    this.height = 0;
+    this.width = 1;
+    this.height = 1;
 
-    this.sprite = new PIXI.Graphics();
+    this.sprite = null;
 
   }
 
   getSprite() {
     //rectangle.lineStyle(4, 0xFF3300, 1);
-    this.sprite.beginFill(0x66CCFF);
-    this.sprite.drawRect(0, 0, this.width, this.height);
-    this.sprite.endFill();
-    this.sprite.x = this.x;
-    this.sprite.y = this.y;
+    if (this.sprite == null) {
+      let g = new PIXI.Graphics();
+      g.beginFill(0x66CCFF);
+      g.drawRect(0, 0, 1, 1);
+      g.endFill();
+      this.sprite = new PIXI.Sprite(g.generateTexture());
+      this.sprite.x = this.x;
+      this.sprite.y = this.y;
+    }
     return this.sprite;
+  }
+
+  setPosition(x,y,w,h) {
+    this.x = x;
+    this.y = y;
+    this.width  = w;
+    this.height = h;
+    if (!this.sprite) {
+      return;
+    }
+    this.sprite.x = x;
+    this.sprite.y = y;
+    this.sprite.width  = w;
+    this.sprite.height = h;
   }
 }
 
 class ChartContainer {
+  
   constructor(opt) {
     this.width  = opt.width;
     this.height = opt.height;
-    this.ChartTick = [];
+    this.ChartTicks = [];
     this.Container = new PIXI.Container();
   }
   
   addChartTick(ct) {
-    this.ChartTick.push(ct);
+    this.ChartTicks.push(ct);
   }
 
-  setPosition() {
-    let vx = 200;
-    this.ChartTick.forEach(function(obj){
-      obj.x = vx;
-      obj.y = 50
-      obj.width = 2;
-      obj.height = 50
-
+  setChartPos() {
+    let vx = this.width - 5;
+    this.ChartTicks.forEach(function(obj){
+      obj.setPosition(vx, 50, 2, 50);
       vx -= obj.width + 2;
     });
   }
 
-  setup() {
-    let rectangle = new PIXI.Graphics();
-    //rectangle.lineStyle(4, 0xFF3300, 1);
-    rectangle.beginFill(0x66CCFF);
-    rectangle.drawRect(0, 0, 30, 30);
-    rectangle.endFill();
-    rectangle.x = 50;
-    rectangle.y = 50;
-    this.Container.addChild(rectangle);
+  cleanup() {
+    //this.Container.destroy(true);
+  }
 
-    this.setPosition();
-    console.log(this.ChartTick);
+  draw() {
+    this.setChartPos();
+  }
+
+  setup() {
     let that = this;
-    this.ChartTick.forEach(function(obj){
-      that.Container.addChild(obj.getSprite());
+    this.ChartTicks.forEach(function(obj){
+      let sp = obj.getSprite();
+      that.Container.addChild(sp);
     });
+    this.draw();
   }
 
   getContainer() {
@@ -97,7 +111,7 @@ class ChartContainer {
 
 var chartContainer = new ChartContainer({width:255, height:255});
 chartContainer.addChartTick(new ChartTick({dt:new Date(),l:1,h:2,s:3,e:4}));
-chartContainer.addChartTick(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
+//chartContainer.addChartTick(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
 console.log(chartContainer);
 
 PIXI.loader
