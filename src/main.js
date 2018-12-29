@@ -13,8 +13,8 @@ function createWindow() {
   mainWindow = new BrowserWindow(
     {
       title: config.name,
-      width: 800, 
-      height: 600
+      width: 1600, 
+      height: 1024
     });
 
   mainWindow.loadURL(url.format({

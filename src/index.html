@@ -8,35 +8,21 @@ const PIXI = require('pixi.js');
 </head>
 <body>
 <h1>Sample</h1>
+<script type="text/javascript" src="test/testdata.json"></script>
 <script>
 
-var testdata = [
-{dt:new Date(),open:139.63,end:139.63,high:139.75,low:139.63}
-,{dt:new Date(),open:139.63,end:139.63,high:139.75,low:139.63}
-,{dt:new Date(),open:139.63,end:139.53,high:140.05,low:139.43}
-,{dt:new Date(),open:139.53,end:140.09,high:140.13,low:139.53}
-,{dt:new Date(),open:140.11,end:140.41,high:140.5,low:140.09}
-,{dt:new Date(),open:140.41,end:140.23,high:140.46,low:140.19}
-,{dt:new Date(),open:140.23,end:140.32,high:140.42,low:140.18}
-,{dt:new Date(),open:140.33,end:140.28,high:140.43,low:140.2}
-,{dt:new Date(),open:140.28,end:140.18,high:140.32,low:140.17}
-,{dt:new Date(),open:140.16,end:140.24,high:140.31,low:140.08}
-,{dt:new Date(),open:140.25,end:140.28,high:140.44,low:140.15}
-,{dt:new Date(),open:140.29,end:140.29,high:140.42,low:140.24}
-,{dt:new Date(),open:140.25,end:140.23,high:140.4,low:140.18}
-,{dt:new Date(),open:140.21,end:140.25,high:140.38,low:140.19}
-,{dt:new Date(),open:140.28,end:140.18,high:140.35,low:140.17}
-,{dt:new Date(),open:140.18,end:140.31,high:140.37,low:140.16}
-,{dt:new Date(),open:140.34,end:140.2,high:140.37,low:140.17}
-,{dt:new Date(),open:140.2,end:140.2,high:140.27,low:140.12}
-,{dt:new Date(),open:140.21,end:140.18,high:140.34,low:140.14}
-];
+//console.log(testdata);
+
+var GDATA = {};
+GDATA.width = 1024;
+GDATA.height = 1024;
+GDATA.PIXRATE = 70;
 
 let app = new PIXI.Application({ 
-    width: 256, 
-    height: 256,                       
-    antialias: true, 
-    transparent: false, 
+    width: GDATA.width,
+    height: GDATA.height,
+    antialias: true,
+    transparent: false,
     resolution: 1
   }
 );
@@ -45,7 +31,7 @@ document.body.appendChild(app.view);
 
 class ChartTick {
   constructor(opt) {
-    this.dt    = opt.dt;
+    this.dt    = new Date(opt.dt);
     this.open  = opt.open;
     this.end   = opt.end;
     this.high  = opt.high;
@@ -127,10 +113,10 @@ class ChartContainer {
     let that = this;
     let vx = this.width - 5;
     this.ChartTicks.forEach(function(obj){
-      let top = (that.base - obj.high)*100 + that.hmid;
-      let height = (that.base - obj.low)*100 + that.hmid - top;
-      console.log("top:" + top);
-      console.log("height:" + height);
+      let top = (that.base - obj.high)*GDATA.PIXRATE + that.hmid;
+      let height = (that.base - obj.low)*GDATA.PIXRATE + that.hmid - top;
+      //console.log("top:" + top);
+      //console.log("height:" + height);
       obj.setPosition({x:vx, y:top, w:2, h:height});
       vx -= obj.width + 2;
     });
@@ -158,7 +144,7 @@ class ChartContainer {
   }
 }
 
-var chartContainer = new ChartContainer({width:255, height:255});
+var chartContainer = new ChartContainer({width:GDATA.width, height:GDATA.height});
 testdata.forEach(function(data){
   chartContainer.addChartTick(new ChartTick(data));
 });
