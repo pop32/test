@@ -31,7 +31,6 @@ var testdata = [
 ,{dt:new Date(),open:140.2,end:140.2,high:140.27,low:140.12}
 ,{dt:new Date(),open:140.21,end:140.18,high:140.34,low:140.14}
 ];
-console.log(testdata);
 
 let app = new PIXI.Application({ 
     width: 256, 
@@ -75,18 +74,18 @@ class ChartTick {
     return this.sprite;
   }
 
-  setPosition(x,y,w,h) {
-    this.x = x;
-    this.y = y;
-    this.width  = w;
-    this.height = h;
+  setPosition(args) {
+    this.x = args.x;
+    this.y = args.y;
+    this.width  = args.w;
+    this.height = args.h;
     if (!this.sprite) {
       return;
     }
-    this.sprite.x = x;
-    this.sprite.y = y;
-    this.sprite.width  = w;
-    this.sprite.height = h;
+    this.sprite.x = args.x;
+    this.sprite.y = args.y;
+    this.sprite.width  = args.w;
+    this.sprite.height = args.h;
   }
 }
 
@@ -95,18 +94,44 @@ class ChartContainer {
   constructor(opt) {
     this.width  = opt.width;
     this.height = opt.height;
+    this.hmid = this.height / 2;
     this.ChartTicks = [];
     this.Container = new PIXI.Container();
+    this.max = 0;
+    this.min = Number.MAX_VALUE;
+    this.base = 0;
   }
   
   addChartTick(ct) {
     this.ChartTicks.push(ct);
+    this.max = Math.max(this.max, ct.high);
+    this.min = Math.min(this.min, ct.low);
+    this.setBase();
+  }
+
+  setBase() {
+    this.base = (this.max + this.min) / 2;
+  }
+
+  setMax() {
+    this.max = Math.max(...this.ChartTicks.map(m => m.high));
+    this.setBase();
+  }
+
+  setMin() {
+    this.min = Math.min(...this.ChartTicks.map(m => m.low));
+    this.setBase();
   }
 
   setChartPos() {
+    let that = this;
     let vx = this.width - 5;
     this.ChartTicks.forEach(function(obj){
-      obj.setPosition(vx, 50, 2, 50);
+      let top = (that.base - obj.high)*100 + that.hmid;
+      let height = (that.base - obj.low)*100 + that.hmid - top;
+      console.log("top:" + top);
+      console.log("height:" + height);
+      obj.setPosition({x:vx, y:top, w:2, h:height});
       vx -= obj.width + 2;
     });
   }
