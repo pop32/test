@@ -8,7 +8,9 @@ const PIXI = require('pixi.js');
 </head>
 <body>
 <h1>Sample</h1>
-<script type="text/javascript" src="test/testdata.json"></script>
+<!-- <script type="text/javascript" src="test/testdata.json"></script> -->
+<!-- <script type="text/javascript" src="test/testdata30min.json"></script> -->
+<script type="text/javascript" src="test/testdata60min.json"></script>
 <script>
 
 //console.log(testdata);
@@ -17,17 +19,6 @@ var GDATA = {};
 GDATA.width = 1024;
 GDATA.height = 1024;
 GDATA.PIXRATE = 70;
-
-let app = new PIXI.Application({ 
-    width: GDATA.width,
-    height: GDATA.height,
-    antialias: true,
-    transparent: false,
-    resolution: 1
-  }
-);
-
-document.body.appendChild(app.view);
 
 class ChartTick {
   constructor(opt) {
@@ -56,6 +47,10 @@ class ChartTick {
       this.sprite = new PIXI.Sprite(g.generateTexture());
       this.sprite.x = this.x;
       this.sprite.y = this.y;
+      this.sprite.interactive = true;
+      this.sprite.buttonMode = true;
+      // todo マウス操作の実装
+      this.sprite.on('pointerdown',function(){console.log('pointerdown!')});
     }
     return this.sprite;
   }
@@ -151,20 +146,51 @@ testdata.forEach(function(data){
 //chartContainer.addChartTick(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
 console.log(chartContainer);
 
+let app = new PIXI.Application({ 
+    width: GDATA.width,
+    height: GDATA.height,
+    antialias: true,
+    transparent: false,
+    resolution: 1
+  }
+);
+
+document.body.appendChild(app.view);
 PIXI.loader
   .add("img/test.png")
   .load(setup);
 
+function test_event(e) {
+  console.log('test_event called!');
+  console.log(e);
+}
+
 function setup() {
   //Create the cat sprite
   let cat = new PIXI.Sprite(PIXI.loader.resources["img/test.png"].texture);
+  console.log(cat);
+  cat.interactive = true;
+  cat.buttonMode = true;
+  cat.on('pointerdown', function(){console.log('clicked!')});
 
   chartContainer.setup();
-  app.stage.addChild(chartContainer.getContainer());
+  let container = chartContainer.getContainer();
+  // container.interactive = true;
+  // container.buttonMode = true;
+  // container.on('pointerdown', function(){console.log('container clicked!')});
+  console.log(container)
+  app.stage.addChild(container);
 
   //Add the cat to the stage
   app.stage.addChild(cat);
 
+  //document.addEventListener('mousedown', test_event.bind());
+
+  /*
+  chartContainer.on('mousedown', function(e) {
+    console.log('clicked!');
+  });
+  */
 }
 
 
