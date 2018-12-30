@@ -18,6 +18,7 @@ const PIXI = require('pixi.js');
 var GDATA = {};
 GDATA.width = 1024;
 GDATA.height = 1024;
+GDATA.chartViewWidth = GDATA.width;
 GDATA.PIXRATE = 70;
 
 class ChartTick {
@@ -77,10 +78,15 @@ class ChartContainer {
     this.height = opt.height;
     this.hmid = this.height / 2;
     this.ChartTicks = [];
-    this.Container = new PIXI.Container();
+    this.TopContainer = new PIXI.Container();
+    this.ChartContainer = new PIXI.Container();
     this.max = 0;
     this.min = Number.MAX_VALUE;
     this.base = 0;
+
+    this.clickEventObj = null;
+    this.isDragging = false;
+
   }
   
   addChartTick(ct) {
@@ -125,27 +131,53 @@ class ChartContainer {
     this.setChartPos();
   }
 
+  evtMouseDown(e) {
+    console.log('evtMouseDown called!');
+    console.log(e);
+
+    this.ChartContainer.x += 10;
+    //this.clickEventObj.x -= 10;
+
+    // ドラッグ検知
+    this.evtDragStart(e);
+  }
+
+  evtDragStart(e) {
+    console.log('evtDragStart called!');
+    this.isDragging = true;
+
+  }
+
   setup() {
     let that = this;
     this.ChartTicks.forEach(function(obj){
       let sp = obj.getSprite();
-      that.Container.addChild(sp);
+      that.ChartContainer.addChild(sp);
     });
+
+    // クリックイベント検出用
+    this.clickEventObj = new PIXI.Graphics();
+    let rect = new PIXI.Rectangle(0, 0, this.width, this.height);
+    this.clickEventObj.beginFill(0xffffff, 0); //ヒットエリアは透明
+    this.clickEventObj.drawShape(rect);
+    this.clickEventObj.endFill();
+    this.clickEventObj.interactive = true;
+    //this.clickEventObj.buttonMode = true;
+    this.clickEventObj.on('mousedown', e => that.evtMouseDown(e));
+    this.clickEventObj.on('touchstart', e => that.evtMouseDown(e));
+    
+    this.TopContainer.addChild(this.clickEventObj);
+    this.TopContainer.addChild(this.ChartContainer);
     this.draw();
   }
 
   getContainer() {
-    return this.Container;
+    return this.TopContainer;
   }
+
 }
 
-var chartContainer = new ChartContainer({width:GDATA.width, height:GDATA.height});
-testdata.forEach(function(data){
-  chartContainer.addChartTick(new ChartTick(data));
-});
-//chartContainer.addChartTick(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
-console.log(chartContainer);
-
+// PIXI画面表示開始
 let app = new PIXI.Application({ 
     width: GDATA.width,
     height: GDATA.height,
@@ -173,8 +205,15 @@ function setup() {
   cat.buttonMode = true;
   cat.on('pointerdown', function(){console.log('clicked!')});
 
-  chartContainer.setup();
-  let container = chartContainer.getContainer();
+  // チャート描画開始
+  var chartView = new ChartContainer({width:GDATA.chartViewWidth, height:GDATA.height});
+  testdata.forEach(function(data){
+    chartView.addChartTick(new ChartTick(data));
+  });
+  //chartContainer.addChartTick(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
+  console.log(chartView);
+  chartView.setup();
+  let container = chartView.getContainer();
   // container.interactive = true;
   // container.buttonMode = true;
   // container.on('pointerdown', function(){console.log('container clicked!')});
