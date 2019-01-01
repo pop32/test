@@ -10,6 +10,7 @@ const PIXI = require('pixi.js');
 <h1>Sample</h1>
 <!-- <script type="text/javascript" src="test/testdata.json"></script> -->
 <!-- <script type="text/javascript" src="test/testdata30min.json"></script> -->
+<!-- <script type="text/javascript" src="test/testdata60min.json"></script> -->
 <script type="text/javascript" src="test/testdata60min.json"></script>
 <script>
 
@@ -20,6 +21,8 @@ GDATA.width = 1024;
 GDATA.height = 1024;
 GDATA.chartViewWidth = GDATA.width;
 GDATA.PIXRATE = 70;
+
+
 
 class ChartTick {
   constructor(opt) {
@@ -48,10 +51,10 @@ class ChartTick {
       this.sprite = new PIXI.Sprite(g.generateTexture());
       this.sprite.x = this.x;
       this.sprite.y = this.y;
-      this.sprite.interactive = true;
-      this.sprite.buttonMode = true;
+      //this.sprite.interactive = true;
+      //this.sprite.buttonMode = true;
       // todo マウス操作の実装
-      this.sprite.on('pointerdown',function(){console.log('pointerdown!')});
+      //this.sprite.on('pointerdown',function(){console.log('pointerdown!')});
     }
     return this.sprite;
   }
@@ -84,6 +87,8 @@ class ChartContainer {
     this.min = Number.MAX_VALUE;
     this.base = 0;
 
+    this.bolingers = [];
+
     this.clickEventObj = null;
     this.mouseEvtData = {
       dragging : false,
@@ -95,7 +100,6 @@ class ChartContainer {
         Point : null,
       }
     };
-
 
   }
   
@@ -120,6 +124,10 @@ class ChartContainer {
     this.setBase();
   }
 
+  cleanup() {
+    //this.Container.destroy(true);
+  }
+
   setChartPos() {
     let that = this;
     let vx = this.width - 5;
@@ -133,12 +141,83 @@ class ChartContainer {
     });
   }
 
-  cleanup() {
-    //this.Container.destroy(true);
+  drawBolinger() {
+    //console.log('drawBolinger called!-------------------');
+    let that = this;
+    let gn3 = new PIXI.Graphics();
+    let gn2 = new PIXI.Graphics();
+    let gn1 = new PIXI.Graphics();
+    let gn = new PIXI.Graphics();
+    let g_n1 = new PIXI.Graphics();
+    let g_n2 = new PIXI.Graphics();
+    let g_n3 = new PIXI.Graphics();
+    let c1 = 0x66CCFF;
+    let alfa = 0.8;
+    gn3.beginFill(0xffffff, 0);
+    gn3.lineStyle(1, c1, alfa);
+    gn2.beginFill(0xffffff, 0);
+    gn2.lineStyle(1, c1, alfa);
+    gn1.beginFill(0xffffff, 0);
+    gn1.lineStyle(1, c1, alfa);
+    gn.beginFill(0xffffff, 0);
+    gn.lineStyle(1, c1, alfa);
+    g_n1.beginFill(0xffffff, 0);
+    g_n1.lineStyle(1, c1, alfa);
+    g_n2.beginFill(0xffffff, 0);
+    g_n2.lineStyle(1, c1, alfa);
+    g_n3.beginFill(0xffffff, 0);
+    g_n3.lineStyle(1, c1, alfa);
+    let i = 0;
+    let vx = this.width - 5;
+    this.bolingers.forEach(vals => {
+      if (vals.n3 != -1) {
+        let yn3 = (that.base - vals.n3)*GDATA.PIXRATE + that.hmid;
+        let yn2 = (that.base - vals.n2)*GDATA.PIXRATE + that.hmid;
+        let yn1 = (that.base - vals.n1)*GDATA.PIXRATE + that.hmid;
+        let yn = (that.base - vals.n)*GDATA.PIXRATE + that.hmid;
+        let y_n1 = (that.base - vals._n1)*GDATA.PIXRATE + that.hmid;
+        let y_n2 = (that.base - vals._n2)*GDATA.PIXRATE + that.hmid;
+        let y_n3 = (that.base - vals._n3)*GDATA.PIXRATE + that.hmid;
+        if (i == 0) {
+          gn3.moveTo(vx, yn3);
+          gn2.moveTo(vx, yn2);
+          gn1.moveTo(vx, yn1);
+          gn.moveTo(vx, yn);
+          g_n1.moveTo(vx, y_n1);
+          g_n2.moveTo(vx, y_n2);
+          g_n3.moveTo(vx, y_n3);
+        } else {
+          gn3.lineTo(vx, yn3);
+          gn2.lineTo(vx, yn2);
+          gn1.lineTo(vx, yn1);
+          gn.lineTo(vx, yn);
+          g_n1.lineTo(vx, y_n1);
+          g_n2.lineTo(vx, y_n2);
+          g_n3.lineTo(vx, y_n3);
+        }
+      }
+      vx -= 4;
+      i++;
+    });
+    gn3.endFill();
+    gn2.endFill();
+    gn1.endFill();
+    gn.endFill();
+    g_n1.endFill();
+    g_n2.endFill();
+    g_n3.endFill();
+    this.ChartContainer.addChild(gn3);
+    this.ChartContainer.addChild(gn2);
+    this.ChartContainer.addChild(gn1);
+    this.ChartContainer.addChild(gn);
+    this.ChartContainer.addChild(g_n1);
+    this.ChartContainer.addChild(g_n2);
+    this.ChartContainer.addChild(g_n3);
   }
 
   draw() {
     this.setChartPos();
+    this.drawBolinger();
   }
 
   evtMouseDown(e) {
@@ -199,6 +278,30 @@ class ChartContainer {
 
   }
 
+  // 合計値の計算
+  calcSum(data){
+    let sum = 0;
+    for (let i=0; i<data.length; i++) {
+      sum = sum + data[i];
+    }
+    return (sum);
+  }
+
+  // 平均値の計算
+  calcAve(data){
+    return (this.calcSum(data) / data.length);
+  }
+
+  // 分散の計算
+  calcVar(data){
+    let ave = this.calcAve(data);    // 平均値
+    let varia = 0;
+    for (let i=0; i<data.length; i++) {
+        varia = varia + Math.pow(data[i] - ave, 2);
+    }
+    return (varia / data.length);
+  }  
+
   setup() {
     let that = this;
     this.ChartTicks.forEach(function(obj){
@@ -223,9 +326,57 @@ class ChartContainer {
     this.clickEventObj.on('mouseup', e => that.evtMouseUp(e));
     this.clickEventObj.on('mousemove', e => that.evtMouseMove(e));
     this.clickEventObj.on('touchmove', e => that.evtMouseMove(e));
-    
+
+    // let g = new PIXI.Graphics();
+    // g.beginFill(0xffffff, 0);
+    // g.lineStyle(1, 0x66CCFF, 1);
+    // g.moveTo(0,0);
+    // g.lineTo(100, 100);
+    // g.lineTo(150, 50);
+    // g.endFill();
+    // this.ChartContainer.addChild(g);
+
+    let bols = [];
+    let lenc = this.ChartTicks.length;
+    let tmparr = [];
+    for (let i = lenc-1; i >= 0; i--) {
+      let ct = this.ChartTicks[i];
+      tmparr.push(ct.end);
+      if (tmparr.length > 21) {
+        tmparr.shift();
+      }
+      if (tmparr.length >= 21) {
+        let avg = this.calcAve(tmparr);
+        let bunsan = this.calcVar(tmparr);
+        let bval = avg + bunsan
+        bols.push({
+          n3:(avg+bunsan*3),
+          n2:(avg+bunsan*2),
+          n1:(avg+bunsan),
+          n:(avg),
+          _n1:(avg-bunsan),
+          _n2:(avg-bunsan*2),
+          _n3:(avg-bunsan*3),
+        });
+      } else {
+        bols.push({
+          n3:-1,
+          n2:-1,
+          n1:-1,
+          n:-1,
+          _n1:-1,
+          _n2:-1,
+          _n3:-1,
+        });
+
+      }
+    }
+    this.bolingers = bols.reverse();
+    //console.log(this.bolingers);
+
     this.TopContainer.addChild(this.clickEventObj);
     this.TopContainer.addChild(this.ChartContainer);
+
     this.draw();
   }
 
@@ -258,7 +409,7 @@ function test_event(e) {
 function setup() {
   //Create the cat sprite
   let cat = new PIXI.Sprite(PIXI.loader.resources["img/test.png"].texture);
-  console.log(cat);
+  //console.log(cat);
   cat.interactive = true;
   cat.buttonMode = true;
   cat.on('pointerdown', function(){console.log('clicked!')});
@@ -269,13 +420,13 @@ function setup() {
     chartView.addChartTick(new ChartTick(data));
   });
   //chartContainer.addChartTick(new ChartTick({dt:new Date(),l:5,h:6,s:7,e:8}));
-  console.log(chartView);
+  //console.log(chartView);
   chartView.setup();
   let container = chartView.getContainer();
   // container.interactive = true;
   // container.buttonMode = true;
   // container.on('pointerdown', function(){console.log('container clicked!')});
-  console.log(container)
+  //console.log(container)
   app.stage.addChild(container);
 
   //Add the cat to the stage
