@@ -85,7 +85,17 @@ class ChartContainer {
     this.base = 0;
 
     this.clickEventObj = null;
-    this.isDragging = false;
+    this.mouseEvtData = {
+      dragging : false,
+      mouseDownEvtData : {
+        Point : null,
+        ChartContainerPoint : {x:0,y:0}
+      },
+      mouseMoveEvtData : {
+        Point : null,
+      }
+    };
+
 
   }
   
@@ -132,19 +142,60 @@ class ChartContainer {
   }
 
   evtMouseDown(e) {
-    console.log('evtMouseDown called!');
-    console.log(e);
+    let data = this.mouseEvtData.mouseDownEvtData;
+    //console.log('evtMouseDown called!--------------------------');
+    //console.log(e);
+    data.Point = e.data.getLocalPosition(this.TopContainer);
+    data.ChartContainerPoint.x = this.ChartContainer.x;
+    data.ChartContainerPoint.y = this.ChartContainer.y;
+    //console.log(data);
 
-    this.ChartContainer.x += 10;
+    //this.ChartContainer.x += 10;
     //this.clickEventObj.x -= 10;
 
     // ドラッグ検知
     this.evtDragStart(e);
   }
 
+  evtMouseUp(e) {
+    //console.log('evtMouseUp called!--------------------------');
+    //console.log(e);
+
+    this.evtDragEnd(e);
+  }
+
+  evtMouseMove(e) {
+    //console.log('evtMouseMove called!');
+    //console.log(e);
+    let data = this.mouseEvtData.mouseMoveEvtData;
+    data.Point = e.data.getLocalPosition(this.TopContainer);
+
+    this.evtDragMove(e);
+  }
+
   evtDragStart(e) {
-    console.log('evtDragStart called!');
-    this.isDragging = true;
+    //console.log('evtDragStart called!');
+    this.mouseEvtData.dragging = true;
+
+  }
+
+  evtDragMove(e) {
+    //console.log('evtDragMove called!');
+    if (this.mouseEvtData.dragging) {
+      let mdData = this.mouseEvtData.mouseDownEvtData;
+      let mvData = this.mouseEvtData.mouseMoveEvtData;
+      let newPoint = e.data.getLocalPosition(this.TopContainer);
+      // マイナス:左にドラッグ
+      let dx = newPoint.x - mdData.Point.x;
+      this.ChartContainer.x = mdData.ChartContainerPoint.x + (dx / 1);
+      //console.log(this.ChartContainer.x);
+      //console.log(mdData.ChartContainerPoint.x);
+    }
+  }
+
+  evtDragEnd(e) {
+    //console.log('evtDragEnd called!');
+    this.mouseEvtData.dragging = false;
 
   }
 
@@ -165,6 +216,13 @@ class ChartContainer {
     //this.clickEventObj.buttonMode = true;
     this.clickEventObj.on('mousedown', e => that.evtMouseDown(e));
     this.clickEventObj.on('touchstart', e => that.evtMouseDown(e));
+    this.clickEventObj.on('mouseup', e => that.evtMouseUp(e));
+    this.clickEventObj.on('mouseupoutside', e => that.evtMouseUp(e));
+    this.clickEventObj.on('touchend', e => that.evtMouseUp(e));
+    this.clickEventObj.on('touchendoutside', e => that.evtMouseUp(e));
+    this.clickEventObj.on('mouseup', e => that.evtMouseUp(e));
+    this.clickEventObj.on('mousemove', e => that.evtMouseMove(e));
+    this.clickEventObj.on('touchmove', e => that.evtMouseMove(e));
     
     this.TopContainer.addChild(this.clickEventObj);
     this.TopContainer.addChild(this.ChartContainer);
