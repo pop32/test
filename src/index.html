@@ -302,6 +302,11 @@ class ChartContainer {
     return (varia / data.length);
   }  
 
+  // 標準偏差の計算
+  calcStd(data) {
+    return Math.sqrt(this.calcVar(data));    // 分散の平方根
+  }
+
   setup() {
     let that = this;
     this.ChartTicks.forEach(function(obj){
@@ -347,16 +352,16 @@ class ChartContainer {
       }
       if (tmparr.length >= 21) {
         let avg = this.calcAve(tmparr);
-        let bunsan = this.calcVar(tmparr);
-        let bval = avg + bunsan
+        let std = this.calcStd(tmparr);
+        let bval = avg + std
         bols.push({
-          n3:(avg+bunsan*3),
-          n2:(avg+bunsan*2),
-          n1:(avg+bunsan),
+          n3:(avg+std*3),
+          n2:(avg+std*2),
+          n1:(avg+std),
           n:(avg),
-          _n1:(avg-bunsan),
-          _n2:(avg-bunsan*2),
-          _n3:(avg-bunsan*3),
+          _n1:(avg-std),
+          _n2:(avg-std*2),
+          _n3:(avg-std*3),
         });
       } else {
         bols.push({
