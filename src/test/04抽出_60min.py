@@ -32,8 +32,17 @@ def isSkipDT(dt):
             skip = True
     return skip
 
+pairlist=['audjpy','cadjpy','chfjpy','eurjpy','gbpjpy','nzdjpy']
+args = sys.argv
+pair = args[1]
+print (args)
+
+if pair not in pairlist:
+    print('pair:' + pair + " is not allowed.")
+    exit(-1)
+
 try:
-    condst = sqlite3.connect("data/gbpjpy_tick_60min.db")
+    condst = sqlite3.connect("data/" + pair + "_tick_60min.db")
     sql = "create table if not exists tick (dt text primary key, open real, end real, high real, low real)"
     condst.execute(sql)
     condst.execute("delete from tick")
@@ -42,7 +51,7 @@ try:
     mlist={}
     mlist['min60']=[0, 30]
 
-    with closing(sqlite3.connect("data/gbpjpy_tick.db")) as conn:
+    with closing(sqlite3.connect("data/" + pair + "_tick.db")) as conn:
         sql = "select min(dt),max(dt) from tick"
         row = conn.execute(sql)
         r = row.fetchone()

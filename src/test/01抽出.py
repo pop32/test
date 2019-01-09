@@ -4,6 +4,7 @@ import sqlite3
 from contextlib import closing
 import glob
 import datetime
+import sys
 
 def strtodt(s):
     d=datetime.datetime(\
@@ -15,11 +16,20 @@ def strtodt(s):
         int(s[12:14]))
     return d
 
-files = glob.glob('data/tmp/gbpjpy*.db')
+pairlist=['audjpy','cadjpy','chfjpy','eurjpy','gbpjpy','nzdjpy']
+args = sys.argv
+pair = args[1]
+print (args)
+
+if pair not in pairlist:
+    print('pair:' + pair + " is not allowed.")
+    exit(-1)
+
+files = glob.glob('data/tmp/' + pair + '*.db')
 #print (files)
 
 try:
-    condst = sqlite3.connect("data/gbpjpy_tick.db")
+    condst = sqlite3.connect("data/" + pair + "_tick.db")
     sql = "create table if not exists tick (dt text primary key, ask real, bit real)"
     condst.execute(sql)
     condst.execute("delete from tick")
@@ -27,7 +37,7 @@ try:
     for fs in files:
         #print(fs)
         conn = sqlite3.connect(fs)
-        sql = "select * from gbpjpy_tick"
+        sql = "select * from " + pair + "_tick"
         row = conn.execute(sql)
         for r in row:
             #print(r)

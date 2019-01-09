@@ -3,6 +3,7 @@
 import datetime
 import sqlite3
 from contextlib import closing
+import sys
 
 def strtodt(s):
     d=datetime.datetime(\
@@ -14,7 +15,14 @@ def strtodt(s):
         int(s[12:14]))
     return d
 
-with closing(sqlite3.connect("data/gbpjpy_tick_60min.db")) as conn:
+pairlist=['audjpy','cadjpy','chfjpy','eurjpy','gbpjpy','nzdjpy']
+args = sys.argv
+pair = args[1]
+if pair not in pairlist:
+    print('pair:' + pair + " is not allowed.")
+    exit(-1)
+
+with closing(sqlite3.connect("data/" + pair + "_tick_60min.db")) as conn:
     sql = "select * from tick where open <> -1 order by dt asc"
     row = conn.execute(sql)
     for r in row:
