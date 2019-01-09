@@ -17,3 +17,9 @@ https://qiita.com/nagisio/items/259bef1748a4db8e0af6
 ドラッグ処理
 http://scottmcdonnell.github.io/pixi-examples/index.html?s=demos&f=dragging.js&title=Dragging
 
+===================================
+memo
+
+find . -type f -regextype posix-basic -regex '.*[0-9]\{8\}\.db' 
+
+cat xxx | xargs -i cp {} xxx

@@ -15,6 +15,23 @@ def strtodt(s):
         int(s[12:14]))
     return d
 
+def isSkipDT(dt):
+    wd = dt.weekday()
+    tm = dt.strftime('%H%M%S')
+    skip = False
+    #日曜日
+    if wd == 6:
+        skip = True
+    #月曜日
+    if wd == 0:
+        if tm < '070000':
+            skip = True
+    #土曜日
+    if wd == 5:
+        if tm > '070000':
+            skip = True
+    return skip
+
 try:
     condst = sqlite3.connect("data/gbpjpy_tick_1day.db")
     sql = "create table if not exists tick (dt text primary key, open real, end real, high real, low real)"
@@ -40,6 +57,12 @@ try:
         #exit(0)
         i = 0
         while mindt < lastdt:
+
+            if isSkipDT(mindt) or isSkipDT(maxdt):
+                mindt = maxdt
+                maxdt = maxdt  + datetime.timedelta(minutes=60)
+                continue
+                
             sql = "select * from tick "\
                   "where dt >= '" + mindt.strftime('%Y%m%d%H%M%S') + "'"\
                   "  and dt <  '" + maxdt.strftime('%Y%m%d%H%M%S') + "'"\
@@ -81,10 +104,11 @@ try:
 
             #print(inssql)
             condst.execute(inssql)
-
+            i = i + 1
             mindt = maxdt
             maxdt = maxdt  + datetime.timedelta(days=1)
             if i > 1000:
+                i = 0
                 condst.commit()
 
         condst.commit()

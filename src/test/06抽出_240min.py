@@ -15,15 +15,32 @@ def strtodt(s):
         int(s[12:14]))
     return d
 
+def isSkipDT(dt):
+    wd = dt.weekday()
+    tm = dt.strftime('%H%M%S')
+    skip = False
+    #日曜日
+    if wd == 6:
+        skip = True
+    #月曜日
+    if wd == 0:
+        if tm < '070000':
+            skip = True
+    #土曜日
+    if wd == 5:
+        if tm > '070000':
+            skip = True
+    return skip
+
 try:
-    condst = sqlite3.connect("data/gbpjpy_tick_5min.db")
+    condst = sqlite3.connect("data/gbpjpy_tick_240min.db")
     sql = "create table if not exists tick (dt text primary key, open real, end real, high real, low real)"
     condst.execute(sql)
     condst.execute("delete from tick")
     condst.execute(sql)
 
     mlist={}
-    mlist['min5']=[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+    mlist['min60']=[0, 30]
 
     with closing(sqlite3.connect("data/gbpjpy_tick.db")) as conn:
         sql = "select min(dt),max(dt) from tick"
@@ -31,15 +48,8 @@ try:
         r = row.fetchone()
         mindt = strtodt(r[0])
         lastdt = strtodt(r[1])
-        maxdt = mindt
-        dtmp = mindt
-        for m in mlist['min5']:
-            dtmp = datetime.datetime(maxdt.year, maxdt.month, maxdt.day, maxdt.hour, m)
-            d_diff = maxdt.timestamp()-dtmp.timestamp()
-            if d_diff < 0:
-                maxdt=dtmp
-        if mindt == maxdt:
-            maxdt = dtmp + datetime.timedelta(minutes=5)
+        maxdt = datetime.datetime(mindt.year, mindt.month, mindt.day, 0, 0)\
+            + datetime.timedelta(minutes=240)
 
         print(mindt)
         print(maxdt)
@@ -47,6 +57,12 @@ try:
         #exit(0)
         i = 0
         while mindt < lastdt:
+
+            if isSkipDT(mindt) or isSkipDT(maxdt):
+                mindt = maxdt
+                maxdt = maxdt  + datetime.timedelta(minutes=60)
+                continue
+
             sql = "select * from tick "\
                   "where dt >= '" + mindt.strftime('%Y%m%d%H%M%S') + "'"\
                   "  and dt <  '" + maxdt.strftime('%Y%m%d%H%M%S') + "'"\
@@ -90,7 +106,7 @@ try:
             condst.execute(inssql)
             i = i + 1
             mindt = maxdt
-            maxdt = maxdt  + datetime.timedelta(minutes=5)
+            maxdt = maxdt  + datetime.timedelta(minutes=240)
             if i > 1000:
                 i = 0
                 condst.commit()

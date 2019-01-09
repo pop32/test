@@ -3,8 +3,19 @@
 import sqlite3
 from contextlib import closing
 import glob
+import datetime
 
-files = glob.glob('data/gbpjpy/*.db')
+def strtodt(s):
+    d=datetime.datetime(\
+        int(s[0:4]),\
+        int(s[4:6]),\
+        int(s[6:8]),\
+        int(s[8:10]),\
+        int(s[10:12]),\
+        int(s[12:14]))
+    return d
+
+files = glob.glob('data/tmp/gbpjpy*.db')
 #print (files)
 
 try:
@@ -20,6 +31,22 @@ try:
         row = conn.execute(sql)
         for r in row:
             #print(r)
+            dt = strtodt(r[0])
+            wd = dt.weekday()
+            tm = dt.strftime('%H%M%S')
+
+            #日曜日
+            if wd == 6:
+                continue
+            #月曜日
+            if wd == 0:
+                if tm < '070000':
+                    continue
+            #土曜日
+            if wd == 5:
+                if tm > '070000':
+                    continue
+
             inssql="insert into tick(dt,ask,bit) values ("\
                 + "'" + r[0] + "',"\
                 + str(r[1]) + ","\
