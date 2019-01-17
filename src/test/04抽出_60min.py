@@ -79,7 +79,7 @@ try:
             row = conn.execute(sql)
             rowdata = row.fetchall()
 
-            dt = maxdt.strftime('%Y%m%d%H%M%S')
+            dt = mindt.strftime('%Y%m%d%H%M%S')
             maxrow = len(rowdata)
             if maxrow == 0:
                 openp = -1
