@@ -46,7 +46,8 @@ try:
         sql = "select min(dt),max(dt) from tick"
         row = conn.execute(sql)
         r = row.fetchone()
-        mindt = strtodt(r[0])
+        tmpdt = strtodt(r[0])
+        mindt = datetime.datetime(tmpdt.year, tmpdt.month, tmpdt.day, 0, 0)
         lastdt = strtodt(r[1])
         maxdt = datetime.datetime(mindt.year, mindt.month, mindt.day, 0, 0)\
             + datetime.timedelta(minutes=240)
